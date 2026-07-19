@@ -103,3 +103,62 @@ pub(crate) unsafe fn read_optional_utf8<'a>(
     // SAFETY: forwarded.
     unsafe { read_utf8(ptr, len).map(Some) }
 }
+
+// =====================================================================
+// PROBE (zzz, temporary): is ErrorCode::DiskFull (-13) reachable?
+// =====================================================================
+// `error_code_for` is pub(crate), so an integration test cannot reach
+// it; this has to live next to the function.
+#[cfg(test)]
+mod zzz_probe_disk_full {
+    use super::error_code_for;
+    use crate::error::ErrorCode;
+    use otterzip_core::OtterzipError;
+
+    /// Win32 ERROR_DISK_FULL / ERROR_HANDLE_DISK_FULL. These are the two
+    /// codes NTFS returns when a write cannot be satisfied for space.
+    const ERROR_DISK_FULL: i32 = 112;
+    const ERROR_HANDLE_DISK_FULL: i32 = 39;
+
+    #[test]
+
+    #[ignore = "known-failure probe: reproduces an unfixed defect. Run with `cargo test -- --ignored`; delete this attribute when fixed."]
+    fn disk_full_io_errors_do_not_map_to_disk_full_code() {
+        for (name, raw) in [
+            ("ERROR_DISK_FULL", ERROR_DISK_FULL),
+            ("ERROR_HANDLE_DISK_FULL", ERROR_HANDLE_DISK_FULL),
+        ] {
+            let io = std::io::Error::from_raw_os_error(raw);
+            let kind = io.kind();
+            let code = error_code_for(&OtterzipError::Io(io)) as i32;
+            println!(
+                "{name} (os {raw}) -> ErrorKind::{kind:?} -> FFI code {code} \
+                 (DiskFull would be {})",
+                ErrorCode::DiskFull as i32
+            );
+            // REGRESSION ASSERT (desired behaviour): ErrorCode::DiskFull
+            // exists, the UI ships an `Error_DiskFull` string in ten
+            // locales, and nothing can ever produce the code. Storage
+            // exhaustion must be distinguishable from generic IO.
+            assert_eq!(
+                code,
+                ErrorCode::DiskFull as i32,
+                "{name} ({kind:?}) mapped to {code} (generic Io) instead of \
+                 DiskFull ({}) — the C# layer turns every unmapped code into \
+                 \"Can't process this archive (corrupted or unsupported)\"",
+                ErrorCode::DiskFull as i32
+            );
+        }
+
+        // Contrast: the two kinds that ARE handled map correctly, so the
+        // gap is specific to storage exhaustion, not a broken function.
+        let nf = error_code_for(&OtterzipError::Io(std::io::Error::from_raw_os_error(2))) as i32;
+        let pd = error_code_for(&OtterzipError::Io(std::io::Error::from_raw_os_error(5))) as i32;
+        println!("ERROR_FILE_NOT_FOUND (os 2) -> FFI code {nf} (FileNotFound = {})",
+            ErrorCode::FileNotFound as i32);
+        println!("ERROR_ACCESS_DENIED  (os 5) -> FFI code {pd} (PermissionDenied = {})",
+            ErrorCode::PermissionDenied as i32);
+        assert_eq!(nf, ErrorCode::FileNotFound as i32);
+        assert_eq!(pd, ErrorCode::PermissionDenied as i32);
+    }
+}
