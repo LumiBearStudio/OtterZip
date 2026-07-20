@@ -257,24 +257,50 @@ fn build_bomb_zip(out: &std::path::Path) {
 }
 
 #[test]
-fn zip_bomb_blocked_by_default_threshold() {
+fn oversized_high_ratio_payload_is_blocked_by_the_absolute_cap() {
+    // `build_bomb_zip` is 10 MB of zeros — high ratio (~1000:1) but only 10 MB
+    // of output, i.e. NOT a disk threat. It is indistinguishable by ratio from
+    // an ordinary zero-filled VM disk, so the ratio gate no longer aborts on it
+    // (that was the false positive that refused benign files, see
+    // tests/zip_bomb_false_positive.rs). The size-based absolute cap is what
+    // stops a payload from actually exhausting the disk — prove it fires here.
     let td = tempdir().unwrap();
     let path = td.path().join("bomb.zip");
     build_bomb_zip(&path);
-
     let archive = Archive::open(&path, OpenMode::Read).unwrap();
-    let opts = ExtractOptions {
-        destination: td.path().join("out"),
+
+    // Ratio-only, no byte cap: the 10 MB total is below the floor, so it
+    // extracts — the relaxation.
+    let ratio_only = ExtractOptions {
+        destination: td.path().join("out_ratio"),
         overwrite: OverwritePolicy::Always,
-        max_compression_ratio: 100, // Tight threshold for the test.
+        max_compression_ratio: 100,
+        max_total_output_bytes: 0,
         ..Default::default()
     };
-    let err = archive
-        .extract_all::<fn(&otterzip_core::Progress) -> bool>(&opts, None)
+    assert!(
+        archive
+            .extract_all::<fn(&otterzip_core::Progress) -> bool>(&ratio_only, None)
+            .is_ok(),
+        "10 MB of zeros is not a disk threat and must extract"
+    );
+
+    // Absolute cap below the payload: refused, regardless of ratio.
+    let archive2 = Archive::open(&path, OpenMode::Read).unwrap();
+    let capped = ExtractOptions {
+        destination: td.path().join("out_cap"),
+        overwrite: OverwritePolicy::Always,
+        max_compression_ratio: 0,
+        max_total_compression_ratio: 0,
+        max_total_output_bytes: 1024 * 1024, // 1 MiB < 10 MB payload
+        ..Default::default()
+    };
+    let err = archive2
+        .extract_all::<fn(&otterzip_core::Progress) -> bool>(&capped, None)
         .unwrap_err();
     assert!(
         matches!(err, OtterzipError::ZipBombSuspected { .. }),
-        "expected ZipBombSuspected, got {err:?}"
+        "the absolute cap must stop an over-cap payload, got {err:?}"
     );
 }
 

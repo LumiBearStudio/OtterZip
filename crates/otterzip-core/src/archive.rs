@@ -1321,6 +1321,7 @@ impl __BombMonitor {
         self.uncompressed_total = self.uncompressed_total.saturating_add(uncompressed);
         self.compressed_total = self.compressed_total.saturating_add(compressed);
 
+        // Absolute cap — the real disk-exhaustion defence. Correct as-is.
         if self.max_total_bytes > 0 && self.uncompressed_total > self.max_total_bytes {
             return Err(OtterzipError::ZipBombSuspected {
                 entry: "<aggregate>".to_string(),
@@ -1328,7 +1329,16 @@ impl __BombMonitor {
                 limit: self.max_total_ratio,
             });
         }
-        if self.max_total_ratio > 0 && self.compressed_total > 0 {
+        // Cumulative ratio — same false-positive as the per-entry gate
+        // (`check_zip_bomb`): benign compressible data reaches a codec's max
+        // ratio, which exceeds the 1000 default. It is only meaningful once the
+        // TOTAL output is large enough to matter; below the floor the absolute
+        // cap above is the guard. Without this, a single 64 MiB zero-filled file
+        // (ratio ~1028) aborted the whole extract as `<aggregate>`.
+        if self.max_total_ratio > 0
+            && self.compressed_total > 0
+            && self.uncompressed_total >= RATIO_GATE_MIN_UNCOMPRESSED
+        {
             let ratio = self.uncompressed_total / self.compressed_total.max(1);
             if ratio > u64::from(self.max_total_ratio) {
                 return Err(OtterzipError::ZipBombSuspected {
@@ -1344,6 +1354,23 @@ impl __BombMonitor {
 
 /// Returns `Some(err)` when the entry's compression ratio crosses the
 /// caller-supplied threshold. Threshold `0` disables the check.
+///
+/// The per-entry ratio is a poor bomb signal on its own: benign data —
+/// zero-filled VM disks, preallocated DB/log files, repetitive text — reaches
+/// a codec's *maximum* ratio legitimately (DEFLATE ~1032:1, LZMA far higher),
+/// which sits ABOVE the shipped default of 1000. Treating ratio alone as an
+/// abort therefore refused ordinary files, and because the check runs before
+/// the write it took the whole extract down with them.
+///
+/// The real defence against disk exhaustion is the absolute cumulative cap
+/// (`max_total_output_bytes`, enforced by `CappedWriter` DURING every write),
+/// which bounds total output regardless of ratio. So this gate is only an
+/// *early-fail optimisation* — worth firing when an entry both claims a large
+/// expansion AND has an implausible ratio, pointless (and harmful) on a small
+/// output the cap would comfortably absorb. Below the absolute floor we defer
+/// entirely to the cumulative cap.
+const RATIO_GATE_MIN_UNCOMPRESSED: u64 = 1024 * 1024 * 1024; // 1 GiB
+
 fn check_zip_bomb(
     entry: &crate::Entry,
     opts: &ExtractOptions,
@@ -1355,6 +1382,11 @@ fn check_zip_bomb(
         return None;
     }
     if entry.compressed_size == 0 || entry.uncompressed_size == 0 {
+        return None;
+    }
+    // Small outputs can't exhaust the disk and the cumulative cap covers the
+    // rest — don't let a legitimately-compressible file (zeros, logs) trip here.
+    if entry.uncompressed_size < RATIO_GATE_MIN_UNCOMPRESSED {
         return None;
     }
     let ratio = entry.uncompressed_size / entry.compressed_size.max(1);

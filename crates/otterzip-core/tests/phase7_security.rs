@@ -126,35 +126,54 @@ fn build_many_small_bomb(zip: &std::path::Path) {
 }
 
 #[test]
-fn cumulative_ratio_blocks_many_small_bomb() {
+fn many_small_bomb_is_stopped_by_the_absolute_cap_not_the_ratio() {
+    // "Spread the payload across many small entries to dodge the per-entry
+    // radar" is a real evasion. It used to be caught by the CUMULATIVE RATIO
+    // gate, but that gate cannot tell this fixture (8 MiB / ~32 KiB ≈ 256:1)
+    // from an ordinary 64 MiB zero-filled VM disk (≈ 1028:1) — the benign file
+    // scores HIGHER. So the ratio gate is now floored: below ~1 GiB of total
+    // output it defers to the absolute byte cap, which is the real
+    // disk-exhaustion defence and is size-based rather than ratio-based.
     let td = tempdir().unwrap();
     let zip = td.path().join("many.zip");
     build_many_small_bomb(&zip);
 
-    // Per-entry ratio is fine (256 KiB / ~1 KiB = ~256, but each entry's
-    // raw bytes are below the per-entry default of 1000). The aggregate
-    // (32×256 KiB ≈ 8 MiB uncompressed / ~32 KiB compressed ≈ 256:1)
-    // blows past this explicit 100:1 cumulative gate.
-    //
-    // Pinned explicitly rather than via Default: the shipped default was
-    // raised to 1000 (it was tripping on legitimately-compressible archives
-    // like logs), so ~256:1 no longer trips the default. This test exercises
-    // the gate *mechanism* at a fixed threshold, independent of the default.
-    let opts = ExtractOptions {
-        destination: td.path().join("out"),
+    // (a) Under a low ratio limit but no byte cap: the ~8 MiB total is below
+    //     the floor, so the ratio gate correctly does NOT fire — this is the
+    //     relaxation that lets legitimately-compressible archives through.
+    let ratio_only = ExtractOptions {
+        destination: td.path().join("out_ratio"),
         overwrite: OverwritePolicy::Always,
-        // Per-entry off, cumulative on at an explicit 100:1.
         max_compression_ratio: 0,
         max_total_compression_ratio: 100,
+        max_total_output_bytes: 0, // cap disabled
         ..Default::default()
     };
-    let archive = Archive::open(&zip, OpenMode::Read).unwrap();
-    let err = archive
-        .extract_all::<fn(&Progress) -> bool>(&opts, None)
+    let a = Archive::open(&zip, OpenMode::Read).unwrap();
+    let res = a.extract_all::<fn(&Progress) -> bool>(&ratio_only, None);
+    assert!(
+        res.is_ok(),
+        "an 8 MiB total is not a disk threat; ratio gate must not fire: {res:?}"
+    );
+
+    // (b) The evasion is still stopped — by the absolute cap. Cap at 1 MiB
+    //     against the ~8 MiB fixture: it trips regardless of how the payload
+    //     is spread across entries.
+    let capped = ExtractOptions {
+        destination: td.path().join("out_cap"),
+        overwrite: OverwritePolicy::Always,
+        max_compression_ratio: 0,
+        max_total_compression_ratio: 0,
+        max_total_output_bytes: 1024 * 1024, // 1 MiB < 8 MiB fixture
+        ..Default::default()
+    };
+    let a2 = Archive::open(&zip, OpenMode::Read).unwrap();
+    let err = a2
+        .extract_all::<fn(&Progress) -> bool>(&capped, None)
         .unwrap_err();
     assert!(
         matches!(err, OtterzipError::ZipBombSuspected { .. }),
-        "cumulative gate must trip, got {err:?}"
+        "absolute cap must stop the many-small-entry evasion, got {err:?}"
     );
 }
 
