@@ -1,11 +1,16 @@
-//! PROBE — claim 2: tar entries whose name bytes are legacy MBCS (CP949 /
-//! Shift_JIS / CP1252) are silently dropped on Windows, and `entries()`
-//! reports a bogus (empty) name for them.
+//! Regression: a tar whose member names are legacy MBCS (CP949 / Shift_JIS)
+//! must NOT be silently dropped. tar carries no encoding flag, so the backend
+//! reads raw name bytes (`Entry::path_bytes()`) and runs them through the
+//! shared encoding cascade (crate::encoding) — the same detector Firefox uses
+//! (chardetng) plus an OS-locale fallback. `Entry::path()` used to hard-error
+//! on any non-UTF-8 name on Windows, which the backend turned into a silent
+//! `continue`, so a Korean/Japanese tarball's members vanished with the
+//! report still reading success.
 //!
-//! tar has no "this name is UTF-8" flag; pre-UTF-8 tar tools wrote raw
-//! locale bytes. The tar crate's `Entry::path()` hard-errors on Windows for
-//! any non-UTF-8 byte sequence ("only Unicode paths are supported on
-//! Windows"), which the TAR backend turns into `continue`.
+//! Locale-independent: the assertions only require that the member is LISTED
+//! with a non-empty name and EXTRACTED (2 files on disk). Whether the exact
+//! decoded string is CP949 vs the detector's guess can vary with the test
+//! host's locale; being dropped must not.
 
 use std::fs;
 
@@ -53,8 +58,6 @@ fn push_member(out: &mut Vec<u8>, name: &[u8], data: &[u8]) {
 }
 
 #[test]
-
-#[ignore = "known-failure probe: reproduces an unfixed defect. Run with `cargo test -- --ignored`; delete this attribute when fixed."]
 fn probe_tar_legacy_codepage_name() {
     let dir = tempdir().unwrap();
     let tar_path = dir.path().join("cp949.tar");

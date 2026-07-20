@@ -21,6 +21,7 @@ use std::time::{Duration, UNIX_EPOCH};
 
 use crate::archive::ExtractWarning;
 use crate::backends::{ArchiveBackend, StreamingExtractCtx};
+use crate::encoding::{self, LegacyCodepageOverride, NameEncoding, NameInput};
 use crate::entry::{Entry, HostOs};
 use crate::error::{Result, OtterzipError};
 use crate::format::{CompressionMethod, EncryptionMethod};
@@ -51,6 +52,12 @@ pub(crate) struct TarBackend {
     /// repeated metadata calls (e.g. an outer `entry_count`) don't re-stream.
     /// Wrapped in `RefCell` to honour the `&self` API contract.
     cache: RefCell<Option<Vec<Entry>>>,
+    /// The one filename encoding chosen for this archive. tar carries NO
+    /// encoding indicator (unlike ZIP's GP bit 11 / 0x7075), so names are raw
+    /// locale bytes; `read_metadata_uncached` runs the detector over ALL names
+    /// once and caches the verdict here so `entries()`, the streaming extract
+    /// and random-access `extract_entry` all decode identically.
+    name_encoding: RefCell<Option<NameEncoding>>,
 }
 
 impl TarBackend {
@@ -62,7 +69,34 @@ impl TarBackend {
             path: path.to_path_buf(),
             compression,
             cache: RefCell::new(None),
+            name_encoding: RefCell::new(None),
         })
+    }
+
+    /// Decode one raw tar name with the archive's chosen encoding. tar sets no
+    /// UTF-8 flag and has no Unicode-path extra, so the cascade relies on
+    /// tier-2 (valid UTF-8) then tier-3 (the detected legacy codepage).
+    fn decode_name(bytes: &[u8], enc: NameEncoding) -> String {
+        encoding::decode_one(
+            &NameInput {
+                raw_bytes: bytes,
+                utf8_flag: false,
+                unicode_path_extra: None,
+            },
+            enc,
+        )
+    }
+
+    /// Return the archive's filename encoding, running (and caching) the
+    /// detector over every name if it hasn't been decided yet. Random-access
+    /// `extract_entry` uses this so it matches the names `entries()` reported
+    /// even when the caller never listed first.
+    fn ensure_encoding(&self) -> Result<NameEncoding> {
+        if let Some(enc) = *self.name_encoding.borrow() {
+            return Ok(enc);
+        }
+        self.read_metadata_uncached()?; // populates name_encoding as a side effect
+        Ok(self.name_encoding.borrow().unwrap_or(NameEncoding::Utf8))
     }
 
     fn open_decompressed(&self) -> Result<Box<dyn Read + Send>> {
@@ -100,12 +134,35 @@ impl TarBackend {
     fn read_metadata_uncached(&self) -> Result<Vec<Entry>> {
         let stream = self.open_decompressed()?;
         let mut archive = tar::Archive::new(stream);
-        let mut out = Vec::new();
+        // Two-phase: `tar::Entry` is consumed as we iterate, so collect the raw
+        // name bytes + the rest of each pod first, THEN pick one encoding for
+        // the whole archive and decode. `entry.path()` (which we previously
+        // used) hard-errors on Windows for any non-UTF-8 name and the backend
+        // turned that into a silent skip — a CP949/Shift_JIS tarball's members
+        // vanished with the report still reading success.
+        let mut raw_names: Vec<Vec<u8>> = Vec::new();
+        let mut pods: Vec<Entry> = Vec::new();
         for entry in archive.entries().map_err(map_tar_err)? {
             let entry = entry.map_err(map_tar_err)?;
-            out.push(tar_entry_to_pod(&entry)?);
+            raw_names.push(entry.path_bytes().into_owned());
+            pods.push(tar_entry_to_pod(&entry)?); // path filled in below
         }
-        Ok(out)
+
+        let inputs: Vec<NameInput<'_>> = raw_names
+            .iter()
+            .map(|b| NameInput {
+                raw_bytes: b,
+                utf8_flag: false,
+                unicode_path_extra: None,
+            })
+            .collect();
+        let enc = encoding::detect_archive_encoding(&inputs, LegacyCodepageOverride::Auto);
+        *self.name_encoding.borrow_mut() = Some(enc);
+
+        for (pod, bytes) in pods.iter_mut().zip(&raw_names) {
+            pod.path = Self::decode_name(bytes, enc);
+        }
+        Ok(pods)
     }
 }
 
@@ -120,15 +177,15 @@ impl ArchiveBackend for TarBackend {
     }
 
     fn extract_entry(&self, entry_path: &str, out: &mut dyn std::io::Write) -> Result<u64> {
+        // Decode names with the same archive-wide encoding `entries()` used, so
+        // a CP949/Shift_JIS name the caller got from listing still matches here.
+        let enc = self.ensure_encoding()?;
         // Linear scan from the head; tar has no index.
         let stream = self.open_decompressed()?;
         let mut archive = tar::Archive::new(stream);
         for entry in archive.entries().map_err(map_tar_err)? {
             let mut entry = entry.map_err(map_tar_err)?;
-            let path = match entry.path() {
-                Ok(p) => p.to_string_lossy().into_owned(),
-                Err(_) => continue,
-            };
+            let path = Self::decode_name(&entry.path_bytes(), enc);
             if path == entry_path {
                 let written = io::copy(&mut entry, out)?;
                 return Ok(written);
@@ -166,18 +223,17 @@ impl TarBackend {
         let mut archive = tar::Archive::new(stream);
         let mut iter = archive.entries().map_err(map_tar_err)?;
 
+        // The metadata pass above cached the archive's name encoding; decode
+        // each streamed entry the same way so the on-disk names match what
+        // `entries()` reported (and non-UTF-8 names are no longer skipped).
+        let enc = self.name_encoding.borrow().unwrap_or(NameEncoding::Utf8);
         let mut idx: u32 = 0;
         while let Some(entry_res) = iter.next() {
             let mut entry = entry_res.map_err(map_tar_err)?;
-            let path_str = match entry.path() {
-                Ok(p) => p.to_string_lossy().into_owned(),
-                Err(_) => {
-                    ctx.report.entries_skipped += 1;
-                    continue;
-                }
-            };
+            let path_str = Self::decode_name(&entry.path_bytes(), enc);
 
-            let pod = tar_entry_to_pod(&entry)?;
+            let mut pod = tar_entry_to_pod(&entry)?;
+            pod.path = path_str.clone();
 
             // Progress tick before doing work for this entry.
             let snapshot = Progress {
@@ -298,12 +354,13 @@ impl TarBackend {
     }
 }
 
+/// Build the pod for one tar entry EXCEPT its `path`, which the caller fills
+/// in after the archive-wide encoding has been decided (tar names are raw
+/// locale bytes; see `read_metadata_uncached`). Leaving it empty here keeps the
+/// name decode in exactly one place.
 fn tar_entry_to_pod<R: Read>(entry: &tar::Entry<'_, R>) -> Result<Entry> {
     let header = entry.header();
-    let path = entry
-        .path()
-        .map(|p| p.to_string_lossy().into_owned())
-        .unwrap_or_default();
+    let path = String::new();
     let entry_type = header.entry_type();
     let is_directory = entry_type.is_dir();
     let is_symlink = entry_type.is_symlink();
