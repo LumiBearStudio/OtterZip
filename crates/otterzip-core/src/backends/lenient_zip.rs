@@ -440,11 +440,34 @@ impl LenientZipBackend {
                         }
                     };
                     let mut writer = BufWriter::new(file);
-                    let written = match local_backend.extract_entry(&entry.path, &mut writer) {
-                        Ok(n) => n,
-                        Err(e) => {
-                            set_first_err(&first_err, &canceled, e);
-                            return;
+                    // Enforce the absolute output cap DURING the write, sharing
+                    // the running total across workers (the parallel path used
+                    // to check only AFTER a whole entry was on disk).
+                    let written = {
+                        let mut capped = crate::archive::__AtomicCappedWriter {
+                            inner: &mut writer,
+                            written_total: &bytes_done,
+                            cap: opts.max_total_output_bytes,
+                            tripped: false,
+                        };
+                        match local_backend.extract_entry(&entry.path, &mut capped) {
+                            Ok(n) => n,
+                            Err(_) if capped.tripped => {
+                                set_first_err(
+                                    &first_err,
+                                    &canceled,
+                                    OtterzipError::ZipBombSuspected {
+                                        entry: entry.path.clone(),
+                                        ratio: 0,
+                                        limit: opts.max_total_compression_ratio,
+                                    },
+                                );
+                                return;
+                            }
+                            Err(e) => {
+                                set_first_err(&first_err, &canceled, e);
+                                return;
+                            }
                         }
                     };
                     if let Err(e) = writer.flush() {
@@ -463,25 +486,11 @@ impl LenientZipBackend {
                         }
                     }
 
-                    bytes_done.fetch_add(written, std::sync::atomic::Ordering::Relaxed);
+                    // `bytes_done` already advanced in-flight via the capped
+                    // writer above — do NOT add `written` again (double count).
+                    let _ = written;
                     let entries_so_far =
                         entries_done.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
-
-                    if opts.max_total_output_bytes > 0
-                        && bytes_done.load(std::sync::atomic::Ordering::Relaxed)
-                            > opts.max_total_output_bytes
-                    {
-                        set_first_err(
-                            &first_err,
-                            &canceled,
-                            OtterzipError::ZipBombSuspected {
-                                entry: "<aggregate>".to_string(),
-                                ratio: 0,
-                                limit: opts.max_total_compression_ratio,
-                            },
-                        );
-                        return;
-                    }
 
                     if entries_so_far % 8 == 0 || entries_so_far == total_entries {
                         if let Ok(mut sink) = progress_lock.try_lock() {

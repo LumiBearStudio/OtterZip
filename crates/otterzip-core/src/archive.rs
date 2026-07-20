@@ -1293,6 +1293,56 @@ impl<W: std::io::Write + ?Sized> std::io::Write for CappedWriter<'_, W> {
     }
 }
 
+/// The parallel-extract analogue of [`CappedWriter`]. Rayon workers each write
+/// a different entry concurrently, so the running total lives in a shared
+/// [`AtomicU64`] rather than a per-instance field. Every write reserves its
+/// bytes against that counter FIRST; the moment a reservation would push the
+/// aggregate past `cap` the writer commits only the bytes that still fit and
+/// then trips. Without this, the parallel path ran an unbounded `io::copy` and
+/// only checked the total AFTER a whole entry was on disk — a single 8 MiB
+/// entry blew an 8x hole through a 1 MiB cap (the serial path stopped mid-entry
+/// via `CappedWriter`, so the two paths disagreed on the same archive).
+#[doc(hidden)]
+pub(crate) struct __AtomicCappedWriter<'a, W: std::io::Write + ?Sized> {
+    pub inner: &'a mut W,
+    pub written_total: &'a std::sync::atomic::AtomicU64,
+    pub cap: u64,
+    pub tripped: bool,
+}
+
+impl<W: std::io::Write + ?Sized> std::io::Write for __AtomicCappedWriter<'_, W> {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        use std::sync::atomic::Ordering;
+        // Always track the running total here so this writer is the single
+        // source of `written_total`; the caller must NOT also add `written`
+        // afterwards or the count doubles.
+        let prev = self
+            .written_total
+            .fetch_add(buf.len() as u64, Ordering::Relaxed);
+        if self.cap > 0 && prev.saturating_add(buf.len() as u64) > self.cap {
+            // Commit only what still fits under the cap, then stop hard. The
+            // over-reservation above just makes every racing worker also trip,
+            // which is what we want — the extract fails, bounded.
+            let fit = self.cap.saturating_sub(prev) as usize;
+            let fit = fit.min(buf.len());
+            if fit > 0 {
+                self.inner.write_all(&buf[..fit])?;
+            }
+            self.tripped = true;
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "otterzip: extract output-byte cap exceeded",
+            ));
+        }
+        self.inner.write_all(buf)?;
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.inner.flush()
+    }
+}
+
 /// Phase 7 — cumulative bomb gate. Streaming backends call this after
 /// each entry write to track aggregate ratio + total output bytes. A
 /// fresh `BombMonitor` is created per `extract_all` invocation.

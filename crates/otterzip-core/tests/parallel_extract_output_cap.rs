@@ -1,8 +1,9 @@
-//! PROBE (claim 1): the parallel ZIP extract path writes each entry with an
-//! unbounded `io::copy` and only checks `max_total_output_bytes` AFTER the
-//! entry is fully on disk. The serial path wraps the same write in
-//! `CappedWriter` and stops mid-entry. Same archive shape, two code paths,
-//! two very different amounts of disk consumed.
+//! Regression: the parallel ZIP extract path must honour the absolute
+//! output-byte cap DURING the write, like the serial path. It used to run an
+//! unbounded `io::copy` per entry and only check the total AFTER the whole
+//! entry was on disk, so a single 8 MiB entry blew ~8x through a 1 MiB cap
+//! while the serial path (via CappedWriter) stopped mid-entry. Fixed with a
+//! shared-atomic __AtomicCappedWriter so both paths agree.
 
 use std::fs;
 use std::io::Write;
@@ -85,8 +86,6 @@ fn run(label: &str, entry_count: usize, td: &std::path::Path) -> (u64, u64) {
 }
 
 #[test]
-
-#[ignore = "known-failure probe: reproduces an unfixed defect. Run with `cargo test -- --ignored`; delete this attribute when fixed."]
 fn parallel_path_ignores_output_cap_until_after_the_write() {
     let td = tempdir().unwrap();
 

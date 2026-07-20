@@ -688,8 +688,29 @@ impl ZipBackend {
                 }
             };
             let mut writer = BufWriter::new(file);
-            let written = match std::io::copy(&mut zf, &mut writer) {
+            // Enforce the absolute output cap DURING the copy, sharing the
+            // running total across workers — otherwise a single large entry
+            // writes in full before the post-entry aggregate check below runs.
+            let mut capped = crate::archive::__AtomicCappedWriter {
+                inner: &mut writer,
+                written_total: &bytes_done,
+                cap: opts.max_total_output_bytes,
+                tripped: false,
+            };
+            let written = match std::io::copy(&mut zf, &mut capped) {
                 Ok(n) => n,
+                Err(_) if capped.tripped => {
+                    set_first_err(
+                        &first_err,
+                        &canceled,
+                        OtterzipError::ZipBombSuspected {
+                            entry: entry.path.clone(),
+                            ratio: 0,
+                            limit: opts.max_total_compression_ratio,
+                        },
+                    );
+                    return;
+                }
                 Err(e) => {
                     set_first_err(&first_err, &canceled, OtterzipError::Io(e));
                     return;
@@ -712,36 +733,14 @@ impl ZipBackend {
                 }
             }
 
-            bytes_done.fetch_add(written, std::sync::atomic::Ordering::Relaxed);
+            // NOTE: `bytes_done` was already advanced in-flight by the
+            // __AtomicCappedWriter above (it is the single source of the
+            // running total). Do NOT add `written` again here — that double
+            // counts. The in-flight cap has already failed any over-cap write.
+            let _ = (written, entry.compressed_size);
             let entries_so_far = entries_done
                 .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
                 + 1;
-
-            // Phase 7 cumulative bomb gate. We accumulate atomically so the
-            // exact ordering of worker writes doesn't matter; the moment
-            // either the absolute byte cap or the aggregate ratio crosses
-            // the configured threshold we fail-fast.
-            let _ = (written, entry.compressed_size);
-            // (Note: per-entry uncompressed bytes are already counted by
-            // `bytes_done`; we additionally check the aggregate against the
-            // caller-configured caps. We synthesize a `__BombMonitor`-like
-            // check inline because the parallel path can't carry mutable
-            // state across worker invocations.)
-            if opts.max_total_output_bytes > 0
-                && bytes_done.load(std::sync::atomic::Ordering::Relaxed)
-                    > opts.max_total_output_bytes
-            {
-                set_first_err(
-                    &first_err,
-                    &canceled,
-                    OtterzipError::ZipBombSuspected {
-                        entry: "<aggregate>".to_string(),
-                        ratio: 0,
-                        limit: opts.max_total_compression_ratio,
-                    },
-                );
-                return;
-            }
 
             // Progress update: best-effort, only every 8 entries to keep
             // contention on the sink lock minimal.
