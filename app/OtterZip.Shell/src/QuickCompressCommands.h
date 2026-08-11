@@ -20,7 +20,7 @@
 
 namespace OtterZip::Shell
 {
-    struct __declspec(uuid("55555555-2222-3333-4444-555555555555"))
+    struct __declspec(uuid("d38f2276-845d-499d-8311-3c9c9ba692d3"))
     CompressZipQuickCommand : winrt::implements<CompressZipQuickCommand, IExplorerCommand>
     {
         IFACEMETHODIMP GetTitle(IShellItemArray* items, LPWSTR* ppszName) noexcept override;
@@ -33,7 +33,7 @@ namespace OtterZip::Shell
         IFACEMETHODIMP EnumSubCommands(IEnumExplorerCommand** ppEnum) noexcept override;
     };
 
-    struct __declspec(uuid("66666666-2222-3333-4444-555555555555"))
+    struct __declspec(uuid("48492b43-300e-41a2-9392-356f3debc2f5"))
     CompressSevenZQuickCommand : winrt::implements<CompressSevenZQuickCommand, IExplorerCommand>
     {
         IFACEMETHODIMP GetTitle(IShellItemArray* items, LPWSTR* ppszName) noexcept override;
@@ -58,7 +58,7 @@ namespace OtterZip::Shell
     // (one per selected item) using the user's default-format setting.
     // GetState hides itself on single selections; the cheaper
     // single-item case is already covered by the per-format quick verbs.
-    struct __declspec(uuid("aaaaaaaa-2222-3333-4444-555555555555"))
+    struct __declspec(uuid("fc32ea28-1809-481c-b71e-d84b61229da0"))
     CompressIndividuallyCommand : winrt::implements<CompressIndividuallyCommand, IExplorerCommand>
     {
         IFACEMETHODIMP GetTitle(IShellItemArray* items, LPWSTR* ppszName) noexcept override;

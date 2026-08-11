@@ -8,7 +8,7 @@
 // Invoke is a no-op: the user clicks the parent only to expand the
 // submenu — actual work happens in the children's Invoke handlers.
 //
-// CLSID 33333333-2222-3333-4444-555555555555 is registered in the MSIX
+// CLSID 81df37ed-1fd3-4e3a-8cf2-d5f8bfb644b8 is registered in the MSIX
 // manifest as a third com:Class + windows.fileExplorerContextMenus Verb.
 
 #include "OtterzipMenuCommand.h"

@@ -30,7 +30,7 @@ namespace OtterZip::Shell
     // CLSID matches the `desktop5:Verb` entry `OtterzipExtractSmart`
     // in Package.appxmanifest. Registered against every archive
     // ItemType.
-    struct __declspec(uuid("77777777-2222-3333-4444-555555555555"))
+    struct __declspec(uuid("c3dd0de3-e7bf-482c-bb51-67be5a79a72f"))
     ExtractSmartCommand : winrt::implements<ExtractSmartCommand, IExplorerCommand>
     {
         IFACEMETHODIMP GetTitle(IShellItemArray* items, LPWSTR* ppszName) noexcept override;
@@ -44,7 +44,7 @@ namespace OtterZip::Shell
     };
 
     // ------------------------ ExtractToSubfolder --------------------
-    struct __declspec(uuid("88888888-2222-3333-4444-555555555555"))
+    struct __declspec(uuid("5bec639c-b9f1-4aec-906d-4a308df13511"))
     ExtractToSubfolderCommand : winrt::implements<ExtractToSubfolderCommand, IExplorerCommand>
     {
         IFACEMETHODIMP GetTitle(IShellItemArray* items, LPWSTR* ppszName) noexcept override;
@@ -58,7 +58,7 @@ namespace OtterZip::Shell
     };
 
     // -------------------------- ExtractDialog -----------------------
-    struct __declspec(uuid("99999999-2222-3333-4444-555555555555"))
+    struct __declspec(uuid("9bda144d-ce5b-4d18-aa5d-bed7970aec5b"))
     ExtractDialogCommand : winrt::implements<ExtractDialogCommand, IExplorerCommand>
     {
         IFACEMETHODIMP GetTitle(IShellItemArray* items, LPWSTR* ppszName) noexcept override;

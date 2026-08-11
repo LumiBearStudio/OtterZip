@@ -27,7 +27,7 @@
 
 namespace OtterZip::Shell
 {
-    struct __declspec(uuid("33333333-2222-3333-4444-555555555555"))
+    struct __declspec(uuid("81df37ed-1fd3-4e3a-8cf2-d5f8bfb644b8"))
     OtterzipMenuCommand : winrt::implements<OtterzipMenuCommand, IExplorerCommand>
     {
         IFACEMETHODIMP GetTitle(IShellItemArray* items, LPWSTR* ppszName) noexcept override;

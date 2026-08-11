@@ -31,19 +31,19 @@
                  xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10">
     <com:ComServer>
       <com:SurrogateServer DisplayName="OtterZip Shell Extension">
-        <com:Class Id="22222222-2222-3333-4444-555555555555"
+        <com:Class Id="e60e719c-1cbb-4651-a374-eff2d5ddde9b"
                    Path="OtterZip.Shell.dll"
                    ThreadingModel="STA" />
-        <com:Class Id="44444444-2222-3333-4444-555555555555"
+        <com:Class Id="a5927606-6461-438c-81a2-e1205640d703"
                    Path="OtterZip.Shell.dll"
                    ThreadingModel="STA" />
-        <com:Class Id="33333333-2222-3333-4444-555555555555"
+        <com:Class Id="81df37ed-1fd3-4e3a-8cf2-d5f8bfb644b8"
                    Path="OtterZip.Shell.dll"
                    ThreadingModel="STA" />
-        <com:Class Id="55555555-2222-3333-4444-555555555555"
+        <com:Class Id="d38f2276-845d-499d-8311-3c9c9ba692d3"
                    Path="OtterZip.Shell.dll"
                    ThreadingModel="STA" />
-        <com:Class Id="66666666-2222-3333-4444-555555555555"
+        <com:Class Id="48492b43-300e-41a2-9392-356f3debc2f5"
                    Path="OtterZip.Shell.dll"
                    ThreadingModel="STA" />
       </com:SurrogateServer>
@@ -57,29 +57,29 @@
       <desktop5:ItemType Type="*">
         <!-- Bandizip-style direct format-specific quick verbs. -->
         <desktop5:Verb Id="OtterzipCompressZip"
-                       Clsid="55555555-2222-3333-4444-555555555555" />
+                       Clsid="d38f2276-845d-499d-8311-3c9c9ba692d3" />
         <desktop5:Verb Id="OtterzipCompress7z"
-                       Clsid="66666666-2222-3333-4444-555555555555" />
+                       Clsid="48492b43-300e-41a2-9392-356f3debc2f5" />
         <desktop5:Verb Id="OtterzipCompress"
-                       Clsid="44444444-2222-3333-4444-555555555555" />
+                       Clsid="a5927606-6461-438c-81a2-e1205640d703" />
         <desktop5:Verb Id="OtterzipMenu"
-                       Clsid="33333333-2222-3333-4444-555555555555" />
+                       Clsid="81df37ed-1fd3-4e3a-8cf2-d5f8bfb644b8" />
       </desktop5:ItemType>
       <desktop5:ItemType Type=".zip">
         <desktop5:Verb Id="OtterzipExtract"
-                       Clsid="22222222-2222-3333-4444-555555555555" />
+                       Clsid="e60e719c-1cbb-4651-a374-eff2d5ddde9b" />
       </desktop5:ItemType>
       <desktop5:ItemType Type=".7z">
         <desktop5:Verb Id="OtterzipExtract"
-                       Clsid="22222222-2222-3333-4444-555555555555" />
+                       Clsid="e60e719c-1cbb-4651-a374-eff2d5ddde9b" />
       </desktop5:ItemType>
       <desktop5:ItemType Type=".tar">
         <desktop5:Verb Id="OtterzipExtract"
-                       Clsid="22222222-2222-3333-4444-555555555555" />
+                       Clsid="e60e719c-1cbb-4651-a374-eff2d5ddde9b" />
       </desktop5:ItemType>
       <desktop5:ItemType Type=".gz">
         <desktop5:Verb Id="OtterzipExtract"
-                       Clsid="22222222-2222-3333-4444-555555555555" />
+                       Clsid="e60e719c-1cbb-4651-a374-eff2d5ddde9b" />
       </desktop5:ItemType>
     </desktop4:FileExplorerContextMenus>
   </desktop4:Extension>

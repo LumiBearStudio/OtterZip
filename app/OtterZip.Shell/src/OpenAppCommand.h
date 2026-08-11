@@ -15,7 +15,7 @@
 
 namespace OtterZip::Shell
 {
-    struct __declspec(uuid("bbbbbbbb-2222-3333-4444-555555555555"))
+    struct __declspec(uuid("ad0f669b-3701-40c6-87b2-0aacc445dff7"))
     OpenAppCommand : winrt::implements<OpenAppCommand, IExplorerCommand>
     {
         // IExplorerCommand

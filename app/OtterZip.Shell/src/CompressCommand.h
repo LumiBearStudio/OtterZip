@@ -8,7 +8,7 @@
 
 namespace OtterZip::Shell
 {
-    struct __declspec(uuid("44444444-2222-3333-4444-555555555555"))
+    struct __declspec(uuid("a5927606-6461-438c-81a2-e1205640d703"))
     CompressCommand : winrt::implements<CompressCommand, IExplorerCommand>
     {
         IFACEMETHODIMP GetTitle(IShellItemArray* items, LPWSTR* ppszName) noexcept override;

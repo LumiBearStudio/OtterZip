@@ -11,7 +11,7 @@
 
 namespace OtterZip::Shell
 {
-    struct __declspec(uuid("22222222-2222-3333-4444-555555555555"))
+    struct __declspec(uuid("e60e719c-1cbb-4651-a374-eff2d5ddde9b"))
     ExtractHereCommand : winrt::implements<ExtractHereCommand, IExplorerCommand>
     {
         // IExplorerCommand

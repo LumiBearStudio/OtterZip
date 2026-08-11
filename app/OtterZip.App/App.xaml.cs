@@ -225,6 +225,12 @@ public partial class App : Application
         // first-right-click verb miss. After the language override so the
         // cached strings match the active locale. Best-effort; never throws.
         ShellMenuCache.Refresh();
+
+        // First launch after an install/update: broadcast SHCNE_ASSOCCHANGED
+        // once so Explorer reloads the freshly (re)registered context-menu
+        // verbs without waiting for a reboot. One-shot per version;
+        // best-effort. See ShellAssociationNotifier for scope + limits.
+        ShellAssociationNotifier.NotifyIfVersionChanged();
     }
 
     /// <summary>

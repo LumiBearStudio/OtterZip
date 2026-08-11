@@ -16,14 +16,14 @@ from pathlib import Path
 MANIFEST = Path(__file__).resolve().parent.parent / "app" / "OtterZip.App" / "Package.appxmanifest"
 
 EXTRACT_VERB_LINES = """              <desktop5:Verb Id="OtterzipExtractSmart"
-                             Clsid="77777777-2222-3333-4444-555555555555" />
+                             Clsid="c3dd0de3-e7bf-482c-bb51-67be5a79a72f" />
               <desktop5:Verb Id="OtterzipExtractToSubfolder"
-                             Clsid="88888888-2222-3333-4444-555555555555" />
+                             Clsid="5bec639c-b9f1-4aec-906d-4a308df13511" />
               <desktop5:Verb Id="OtterzipExtractDialog"
-                             Clsid="99999999-2222-3333-4444-555555555555" />
+                             Clsid="9bda144d-ce5b-4d18-aa5d-bed7970aec5b" />
 """
 
-COMPRESS_INDIVIDUAL_VERB_LINE = '              <desktop5:Verb Id="OtterzipCompressIndividually"\n                             Clsid="aaaaaaaa-2222-3333-4444-555555555555" />\n'
+COMPRESS_INDIVIDUAL_VERB_LINE = '              <desktop5:Verb Id="OtterzipCompressIndividually"\n                             Clsid="fc32ea28-1809-481c-b71e-d84b61229da0" />\n'
 
 content = MANIFEST.read_text(encoding="utf-8")
 
@@ -36,7 +36,7 @@ if "OtterzipExtractSmart" in content:
 #   <desktop5:Verb Id="OtterzipExtract" Clsid="22222222-..." />
 # We append the 3 new verbs right after that line.
 extract_pattern = re.compile(
-    r'(\s*<desktop5:Verb Id="OtterzipExtract"\s+Clsid="22222222-2222-3333-4444-555555555555" />\n)'
+    r'(\s*<desktop5:Verb Id="OtterzipExtract"\s+Clsid="e60e719c-1cbb-4651-a374-eff2d5ddde9b" />\n)'
 )
 new_content, n_extract = extract_pattern.subn(
     lambda m: m.group(0) + EXTRACT_VERB_LINES,
@@ -55,7 +55,7 @@ def inject_compress_individually(s: str) -> tuple[str, int]:
     # three blocks (Type="*", Directory, Directory\Background) and not in
     # archive blocks.
     anchor = re.compile(
-        r'(\s*<desktop5:Verb Id="OtterzipCompress"\s+Clsid="44444444-2222-3333-4444-555555555555" />\n)'
+        r'(\s*<desktop5:Verb Id="OtterzipCompress"\s+Clsid="a5927606-6461-438c-81a2-e1205640d703" />\n)'
     )
     new_s, n = anchor.subn(
         lambda m: m.group(0) + COMPRESS_INDIVIDUAL_VERB_LINE,
