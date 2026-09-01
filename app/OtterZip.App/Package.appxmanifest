@@ -30,7 +30,7 @@
   -->
   <Identity Name="LumiBearStudio.OtterZip"
             Publisher="CN=A55D3041-E7F5-46CB-8707-AD9C81D7CB43"
-            Version="1.2.3.0" />
+            Version="1.2.4.0" />
 
   <mp:PhoneIdentity PhoneProductId="00000000-0000-0000-0000-000000000000"
                     PhonePublisherId="00000000-0000-0000-0000-000000000000" />

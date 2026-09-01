@@ -19,6 +19,7 @@ use zeroize::Zeroizing;
 use zip::ZipArchive;
 
 use crate::archive::ExtractWarning;
+use crate::encoding::{self, LegacyCodepageOverride, NameInput};
 use crate::backends::multi_volume_reader::open_for_sequential_read;
 use crate::backends::spanned_zip::SpannedZipReader;
 use crate::backends::{ArchiveBackend, StreamingExtractCtx};
@@ -151,6 +152,14 @@ pub(crate) struct ZipBackend {
     /// × workers — fine for typical splits (28 vols × 8 workers = 224
     /// FDs, well under the process limit).
     source: OpenSource,
+    /// Decoded entry names, index-aligned with the central directory.
+    /// Computed once at open via [`decode_all_names`] so the entry listing
+    /// AND the extract path agree on how legacy-MBCS filenames decode. The
+    /// `zip` crate's own `name()` decodes non-UTF-8 names as CP437, which
+    /// mojibakes Korean/Japanese archives predating GP bit 11 (issue #1).
+    /// Extraction resolves by INDEX against this list rather than by the
+    /// crate's `by_name` (which matches on the CP437 string).
+    entry_names: Vec<String>,
 }
 
 /// Maximum wall-clock budget for `ZipArchive::new` (CD + EOCD parse).
@@ -226,11 +235,13 @@ impl ZipBackend {
             ZipReader::SingleDeadline(dl) => ZipReader::Single(dl.into_inner()),
             other => other,
         };
-        let inner = ZipArchive::new(plain).map_err(map_zip_err)?;
+        let mut inner = ZipArchive::new(plain).map_err(map_zip_err)?;
+        let entry_names = decode_all_names(&mut inner);
         Ok(Self {
             inner: RefCell::new(inner),
             password: password.cloned(),
             source: OpenSource::Single(path.to_path_buf()),
+            entry_names,
         })
     }
 
@@ -259,27 +270,42 @@ impl ZipBackend {
         // many small reads into ~16 syscalls per volume rather than
         // one per read. Matches the Single-volume path's buffering.
         let reader = ZipReader::Multi(BufReader::with_capacity(64 * 1024, szr));
-        let inner = ZipArchive::new(reader).map_err(map_zip_err)?;
+        let mut inner = ZipArchive::new(reader).map_err(map_zip_err)?;
+        let entry_names = decode_all_names(&mut inner);
         Ok(Self {
             inner: RefCell::new(inner),
             password: password.cloned(),
             source: OpenSource::Multi(volumes.to_vec()),
+            entry_names,
         })
     }
 
-    /// Resolve a name to an open `ZipFile`, applying the stored password
-    /// when the entry is encrypted. Wrapped here so both `extract_entry`
-    /// and `open_entry_stream` get the same decryption discipline.
-    fn read_by_name<'a>(
+    /// Map a decoded entry name back to its central-directory index.
+    /// Extraction resolves by index (see [`Self::read_by_index`]) because the
+    /// displayed name is our cascade-decoded string, which the `zip` crate's
+    /// `by_name` (CP437-decoded) can't match on legacy-MBCS archives. On a
+    /// duplicate name we take the first, matching `by_name`'s old semantics.
+    fn index_of(&self, name: &str) -> Result<usize> {
+        self.entry_names
+            .iter()
+            .position(|n| n == name)
+            .ok_or_else(|| OtterzipError::EntryNotFound(name.to_string()))
+    }
+
+    /// Resolve entry `index` to an open `ZipFile`, applying the stored password
+    /// when the entry is encrypted. Wrapped here so `extract_entry`,
+    /// `open_entry_stream`, and the parallel worker share the same decryption
+    /// discipline. Resolving by INDEX (not name) keeps extraction consistent
+    /// with [`decode_all_names`] on legacy-MBCS archives.
+    fn read_by_index<'a>(
         archive: &'a mut ZipArchive<ZipReader>,
-        name: &str,
+        index: usize,
         password: Option<&Zeroizing<String>>,
     ) -> Result<zip::read::ZipFile<'a>> {
         // Probe the entry to see whether it needs a password. We trial
-        // `by_name`, classify the error, and only *then* re-borrow with
-        // `by_name_decrypt`. The probe's borrow is released at the end of
-        // the match block because `probe_outcome` is a `bool`, not a
-        // reference back into `archive`.
+        // `by_index`, classify the error, and only *then* re-borrow with
+        // `by_index_decrypt`. The probe's borrow is released at the end of
+        // the match block because `outcome` holds no reference into `archive`.
         enum Outcome {
             Plain,
             NeedsPassword,
@@ -287,7 +313,7 @@ impl ZipBackend {
             Other(OtterzipError),
         }
         let outcome = {
-            match archive.by_name(name) {
+            match archive.by_index(index) {
                 Ok(_) => Outcome::Plain,
                 Err(zip::result::ZipError::FileNotFound) => Outcome::NotFound,
                 Err(zip::result::ZipError::UnsupportedArchive(msg))
@@ -299,9 +325,9 @@ impl ZipBackend {
             }
         };
         match outcome {
-            Outcome::Plain => archive.by_name(name).map_err(|e| match e {
+            Outcome::Plain => archive.by_index(index).map_err(|e| match e {
                 zip::result::ZipError::FileNotFound => {
-                    OtterzipError::EntryNotFound(name.to_string())
+                    OtterzipError::EntryNotFound(format!("#{index}"))
                 }
                 other => map_zip_err(other),
             }),
@@ -320,7 +346,7 @@ impl ZipBackend {
                         OtterzipError::WrongPassword
                     })?
                     .as_bytes();
-                archive.by_name_decrypt(name, p).map_err(|e| match e {
+                archive.by_index_decrypt(index, p).map_err(|e| match e {
                     zip::result::ZipError::InvalidPassword => {
                         tracing::info!(
                             target: "otterzip::security",
@@ -331,12 +357,12 @@ impl ZipBackend {
                         OtterzipError::WrongPassword
                     }
                     zip::result::ZipError::FileNotFound => {
-                        OtterzipError::EntryNotFound(name.to_string())
+                        OtterzipError::EntryNotFound(format!("#{index}"))
                     }
                     other => map_zip_err(other),
                 })
             }
-            Outcome::NotFound => Err(OtterzipError::EntryNotFound(name.to_string())),
+            Outcome::NotFound => Err(OtterzipError::EntryNotFound(format!("#{index}"))),
             Outcome::Other(e) => Err(e),
         }
     }
@@ -362,14 +388,16 @@ impl ArchiveBackend for ZipBackend {
         let count = archive.len();
         let mut collected: Vec<Result<Entry>> = Vec::with_capacity(count);
         for i in 0..count {
-            collected.push(entry_at(&mut *archive, i));
+            let name = self.entry_names.get(i).map(String::as_str).unwrap_or("");
+            collected.push(entry_at(&mut *archive, i, name));
         }
         Ok(Box::new(collected.into_iter()))
     }
 
     fn extract_entry(&self, entry_path: &str, out: &mut dyn std::io::Write) -> Result<u64> {
+        let index = self.index_of(entry_path)?;
         let mut archive = self.inner.borrow_mut();
-        let mut zf = Self::read_by_name(&mut archive, entry_path, self.password.as_ref())?;
+        let mut zf = Self::read_by_index(&mut archive, index, self.password.as_ref())?;
         let written = std::io::copy(&mut zf, out)?;
         Ok(written)
     }
@@ -380,8 +408,9 @@ impl ArchiveBackend for ZipBackend {
         // hand back a `Cursor`. Large-entry streaming is deferred to
         // Sprint 3 once the backend contract grows a proper streaming
         // method that respects `RefCell` borrow scoping.
+        let index = self.index_of(entry_path)?;
         let mut archive = self.inner.borrow_mut();
-        let mut zf = Self::read_by_name(&mut archive, entry_path, self.password.as_ref())?;
+        let mut zf = Self::read_by_index(&mut archive, index, self.password.as_ref())?;
         let expected = zf.size();
         let cap = usize::try_from(expected).unwrap_or(0);
         let mut buf = Vec::with_capacity(cap);
@@ -495,7 +524,8 @@ impl ZipBackend {
             let mut archive = self.inner.borrow_mut();
             let count = archive.len();
             for i in 0..count {
-                let entry = entry_at(&mut archive, i)?;
+                let name = self.entry_names.get(i).map(String::as_str).unwrap_or("");
+                let entry = entry_at(&mut archive, i, name)?;
                 metas.push(entry);
             }
         }
@@ -555,9 +585,9 @@ impl ZipBackend {
             "parallel extract dispatching to rayon"
         );
         worker_pool.install(|| {
-        metas.par_iter().for_each_init(
+        metas.par_iter().enumerate().for_each_init(
             || open_local(&source_for_init).ok(),
-            |local_handle, entry| {
+            |local_handle, (index, entry)| {
             if canceled.load(std::sync::atomic::Ordering::Relaxed) {
                 return;
             }
@@ -669,9 +699,9 @@ impl ZipBackend {
                     return;
                 }
             };
-            let mut zf = match Self::read_by_name(
+            let mut zf = match Self::read_by_index(
                 local_archive,
-                &entry.path,
+                index,
                 password.as_ref(),
             ) {
                 Ok(zf) => zf,
@@ -837,15 +867,53 @@ fn open_local(source: &OpenSource) -> Result<ZipArchive<ZipReader>> {
 // extract path. One ruleset, audited in one place.
 use crate::archive::__resolve_output_path_streaming as resolve_output_path;
 
+/// Decode every central-directory name through the shared encoding cascade
+/// (`crate::encoding`) so legacy-MBCS archives (CP949 / Shift_JIS / GBK / Big5)
+/// list correctly instead of as CP437 mojibake. Index-aligned with the archive.
+///
+/// The `zip` crate exposes the raw name bytes via `name_raw()` but not the GP
+/// bit-11 flag or the Info-ZIP `0x7075` extra field, so we pass
+/// `utf8_flag: false` and rely on the cascade's tier-2 (valid-UTF-8 passthrough)
+/// for modern UTF-8 archives — their names decode byte-identically, so this is a
+/// pure improvement for the legacy case. See issue #1.
+///
+/// Tolerant: a per-entry `by_index_raw` failure yields an empty name here rather
+/// than failing the whole open — `entry_at` re-reads that index and surfaces the
+/// real error through `entries()`, preserving the previous per-entry error model.
+fn decode_all_names(archive: &mut ZipArchive<ZipReader>) -> Vec<String> {
+    let count = archive.len();
+    let mut raw: Vec<Vec<u8>> = Vec::with_capacity(count);
+    for i in 0..count {
+        match archive.by_index_raw(i) {
+            Ok(zf) => raw.push(zf.name_raw().to_vec()),
+            Err(_) => raw.push(Vec::new()),
+        }
+    }
+    let inputs: Vec<NameInput<'_>> = raw
+        .iter()
+        .map(|b| NameInput {
+            raw_bytes: b,
+            utf8_flag: false,
+            unicode_path_extra: None,
+        })
+        .collect();
+    let (decoded, _enc) = encoding::decode_names(&inputs, LegacyCodepageOverride::Auto);
+    // Rule #3: internal paths use forward slashes. Legacy Windows archives can
+    // carry backslash separators; normalise so path resolution stays uniform.
+    decoded.into_iter().map(|s| s.replace('\\', "/")).collect()
+}
+
 /// Read entry `i` and convert it to our POD. Pulling this out of the
 /// iterator body keeps the enumeration loop easy to audit. We use the
 /// `_raw` variant so encrypted entries don't trip the metadata pass — the
 /// caller still has to provide a password to actually *read* their bytes,
-/// but listing them is allowed.
-fn entry_at(archive: &mut ZipArchive<ZipReader>, i: usize) -> Result<Entry> {
+/// but listing them is allowed. `decoded_name` is the cascade-decoded name
+/// (see [`decode_all_names`]); we do NOT use the crate's CP437-decoding
+/// `zf.name()` for the path.
+fn entry_at(archive: &mut ZipArchive<ZipReader>, i: usize, decoded_name: &str) -> Result<Entry> {
     let zf = archive.by_index_raw(i).map_err(map_zip_err)?;
 
-    let path = zf.name().to_string();
+    let path = decoded_name.to_string();
     let is_directory = zf.is_dir();
     let external = zf.unix_mode();
     let is_symlink = external.is_some_and(|m| (m & 0o170_000) == 0o120_000);

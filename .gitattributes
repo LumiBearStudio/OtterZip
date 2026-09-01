@@ -27,6 +27,7 @@
 *.pdb binary
 *.msix binary
 *.appx binary
+*.zip binary
 
 # 언어 통계에서 제외
 docs/** linguist-documentation
