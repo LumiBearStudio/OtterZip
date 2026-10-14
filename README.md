@@ -8,7 +8,7 @@
 
 Right-click to compress or extract. No ads, no accounts, no tracking.
 
-[**Website**](https://lumibearstudio.github.io/otterzip-web/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**Download**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip)
+[**Website**](https://lumibearstudio.github.io/otterzip-web/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**Download**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip) · [**Sponsor**](https://github.com/sponsors/LumiBearStudio)
 
 English · [한국어](readme/README.ko.md) · [日本語](readme/README.ja.md) · [中文](readme/README.zh.md) · [Deutsch](readme/README.de.md) · [Français](readme/README.fr.md) · [Español](readme/README.es.md) · [Português](readme/README.pt.md) · [Русский](readme/README.ru.md) · [Italiano](readme/README.it.md)
 
