@@ -213,20 +213,53 @@
             </DropDownButton>
         </StackPanel>
 
-        <!-- Top-right chip: Settings gear (sibling of DropHintCard). -->
-        <Button x:Name="SettingsChip"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Margin="12"
-                Style="{StaticResource IconButtonStyle}"
-                x:Uid="Main_SettingsButton"
-                Click="OnSettingsChipClick"
-                MinWidth="32" MinHeight="32"
-                Padding="0">
-            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}"
-                      Glyph="&#xE713;"
-                      FontSize="{StaticResource IconSizeS}" />
-        </Button>
+        <!-- Top-right chips: More menu (⋯) + Settings gear (siblings of
+             DropHintCard). The More menu surfaces support + sister apps + help
+             behind one small icon so the canvas stays clean (no banners); the
+             gear keeps direct one-click Settings access. -->
+        <StackPanel HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Orientation="Horizontal"
+                    Spacing="4"
+                    Margin="12">
+            <Button x:Name="MoreChip"
+                    Style="{StaticResource IconButtonStyle}"
+                    x:Uid="Main_MoreButton"
+                    MinWidth="32" MinHeight="32"
+                    Padding="0">
+                <Button.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedRight">
+                        <MenuFlyoutItem x:Uid="Main_MoreMenu_Support" Click="OnMoreSupport">
+                            <MenuFlyoutItem.Icon>
+                                <!-- Solid heart (U+2665). The Segoe Fluent 'HeartFill'
+                                     glyph rendered as an outline on some machines, so
+                                     use the Unicode heart in the text font, which is
+                                     reliably filled and themes to the foreground. -->
+                                <FontIcon FontFamily="{ThemeResource ContentControlThemeFontFamily}" Glyph="&#x2665;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem x:Uid="Main_MoreMenu_SpanFinder" Click="OnMoreSpanFinder" />
+                        <MenuFlyoutItem x:Uid="Main_MoreMenu_OtterGif" Click="OnMoreOtterGif" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem x:Uid="Main_MoreMenu_Help" Click="OnMoreHelp" />
+                    </MenuFlyout>
+                </Button.Flyout>
+                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}"
+                          Glyph="&#xE712;"
+                          FontSize="{StaticResource IconSizeS}" />
+            </Button>
+            <Button x:Name="SettingsChip"
+                    Style="{StaticResource IconButtonStyle}"
+                    x:Uid="Main_SettingsButton"
+                    Click="OnSettingsChipClick"
+                    MinWidth="32" MinHeight="32"
+                    Padding="0">
+                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}"
+                          Glyph="&#xE713;"
+                          FontSize="{StaticResource IconSizeS}" />
+            </Button>
+        </StackPanel>
 
     </Grid>
 

@@ -86,6 +86,27 @@ public sealed partial class ConfigPanel : UserControl
         SettingsRequested?.Invoke(this, EventArgs.Empty);
     }
 
+    // --- "More" menu (⋯): support + sister apps + help. Each item opens an
+    //     external URL (GitHub Sponsors / Microsoft Store / README) in the
+    //     default handler. Best-effort — a missing browser is non-fatal. ---
+    private static async void OpenUri(string uri)
+    {
+        try { await Windows.System.Launcher.LaunchUriAsync(new Uri(uri)); }
+        catch { /* no browser / protocol handler — nothing we can do, don't crash */ }
+    }
+
+    private void OnMoreSupport(object sender, RoutedEventArgs e)
+        => OpenUri("https://github.com/sponsors/LumiBearStudio");
+
+    private void OnMoreSpanFinder(object sender, RoutedEventArgs e)
+        => OpenUri("https://apps.microsoft.com/detail/9P7NJ351X9TL");
+
+    private void OnMoreOtterGif(object sender, RoutedEventArgs e)
+        => OpenUri("https://apps.microsoft.com/detail/9N0DSSBVCN81");
+
+    private void OnMoreHelp(object sender, RoutedEventArgs e)
+        => OpenUri("https://github.com/LumiBearStudio/OtterZip#readme");
+
     /// <summary>
     /// Single handler for every checkbox inside the Compress-Options
     /// flyout. The checkbox's Tag is its

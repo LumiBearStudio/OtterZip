@@ -337,9 +337,13 @@
   <data name="DropOverlay_RejectTitle.Text" xml:space="preserve"><value>Эти элементы нельзя перетащить сюда</value></data>
   <data name="ExtractPanel_CloseButton.AutomationProperties.Name" xml:space="preserve"><value>Закрыть</value></data>
   <data name="JobCard_CancelButton.AutomationProperties.Name" xml:space="preserve"><value>Отменить задачу</value></data>
-  <!-- More from LumiBear Studio (cross-promo, Info tab) -->
-  <data name="Settings_Info_MoreFromLumiBear.Text"><value>Другие приложения LumiBear Studio</value></data>
-  <data name="Settings_Info_MoreSpanFinder.Content"><value>SPAN Finder — файловый менеджер в стиле Finder</value></data>
-  <data name="Settings_Info_MoreOtterGif.Content"><value>OtterGIF — превращайте видео в GIF</value></data>
-  <data name="Settings_Info_Support.Content"><value>Поддержать OtterZip</value></data>
+  <!-- Main window '...' More menu -->
+  <data name="Main_MoreButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip"><value>Ещё</value></data>
+  <data name="Main_MoreButton.AutomationProperties.Name"><value>Ещё</value></data>
+  <data name="Main_MoreMenu_Support.Text"><value>Поддержать OtterZip</value></data>
+  <data name="Main_MoreMenu_SpanFinder.Text"><value>SPAN Finder</value></data>
+  <data name="Main_MoreMenu_OtterGif.Text"><value>OtterGIF</value></data>
+  <data name="Main_MoreMenu_Help.Text"><value>Справка</value></data>
+  <data name="Main_MoreMenu_SpanFinder.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip"><value>Файловый менеджер в стиле Finder для Windows.</value></data>
+  <data name="Main_MoreMenu_OtterGif.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip"><value>Превращайте видео в GIF. Офлайн, без лишнего.</value></data>
 </root>

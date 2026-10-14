@@ -368,9 +368,13 @@
   <data name="DropOverlay_RejectTitle.Text" xml:space="preserve"><value>Can't drop these items</value></data>
   <data name="ExtractPanel_CloseButton.AutomationProperties.Name" xml:space="preserve"><value>Close</value></data>
   <data name="JobCard_CancelButton.AutomationProperties.Name" xml:space="preserve"><value>Cancel job</value></data>
-  <!-- More from LumiBear Studio (cross-promo, Info tab) -->
-  <data name="Settings_Info_MoreFromLumiBear.Text"><value>More from LumiBear Studio</value></data>
-  <data name="Settings_Info_MoreSpanFinder.Content"><value>SPAN Finder — a Finder-style file manager</value></data>
-  <data name="Settings_Info_MoreOtterGif.Content"><value>OtterGIF — turn videos into GIFs</value></data>
-  <data name="Settings_Info_Support.Content"><value>Support OtterZip</value></data>
+  <!-- Main window '...' More menu -->
+  <data name="Main_MoreButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip"><value>More</value></data>
+  <data name="Main_MoreButton.AutomationProperties.Name"><value>More</value></data>
+  <data name="Main_MoreMenu_Support.Text"><value>Support OtterZip</value></data>
+  <data name="Main_MoreMenu_SpanFinder.Text"><value>SPAN Finder</value></data>
+  <data name="Main_MoreMenu_OtterGif.Text"><value>OtterGIF</value></data>
+  <data name="Main_MoreMenu_Help.Text"><value>Help</value></data>
+  <data name="Main_MoreMenu_SpanFinder.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip"><value>A Finder-style file manager for Windows.</value></data>
+  <data name="Main_MoreMenu_OtterGif.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip"><value>Turn videos into GIFs. Offline, no fuss.</value></data>
 </root>
