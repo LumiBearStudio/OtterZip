@@ -67,6 +67,11 @@ Theme, language, overwrite rules and more — tuned however you like, and out of
 
 Windows 10 (version 2004) or later · x64
 
+## More from LumiBear Studio
+
+- **[SPAN Finder](https://apps.microsoft.com/detail/9P7NJ351X9TL)** — a fast, Finder-style (Miller columns) file manager for Windows. [Source](https://github.com/LumiBearStudio/SpanFinder)
+- **[OtterGIF](https://apps.microsoft.com/detail/9N0DSSBVCN81)** — turn videos into GIFs. Offline, no fuss.
+
 ## License
 
 - `crates/**` — **MIT OR Apache-2.0** (Rust dual license)
