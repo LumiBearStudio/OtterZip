@@ -109,11 +109,16 @@
                              Click="OnShowOnboarding"
                              Margin="0,2,0,0" />
 
-            <!-- Support — opens the GitHub issue board in the default browser.
-                 NavigateUri is a fixed config URL (not a localized string);
-                 only the label is localized via x:Uid. -->
+            <!-- Report an issue — opens the GitHub issue board in the default
+                 browser. NavigateUri is a fixed config URL (not a localized
+                 string); only the label is localized via x:Uid. -->
             <HyperlinkButton x:Uid="Settings_Info_ReportIssue"
                              NavigateUri="https://github.com/LumiBearStudio/OtterZip/issues" />
+
+            <!-- Support OtterZip — GitHub Sponsors (OtterZip is free; this is
+                 the optional way to support development). Fixed config URL. -->
+            <HyperlinkButton x:Uid="Settings_Info_Support"
+                             NavigateUri="https://github.com/sponsors/LumiBearStudio" />
 
             <!-- ====================================================== -->
             <!--  4. Unrar notice                                       -->
@@ -153,6 +158,22 @@
             <HyperlinkButton x:Uid="Settings_Info_PrivacyPolicy"
                              NavigateUri="https://github.com/LumiBearStudio/OtterZip/blob/master/PRIVACY.md"
                              Margin="0,2,0,0" />
+
+            <!-- ====================================================== -->
+            <!--  6. More from LumiBear Studio — sibling apps           -->
+            <!--     Quiet cross-promo; the About tab is the one place   -->
+            <!--     it doesn't clash with the no-clutter main window.   -->
+            <!--     Store product pages (https opens the Store app).    -->
+            <!-- ====================================================== -->
+            <StackPanel Spacing="{StaticResource SpacingSValue}" Margin="0,12,0,0">
+                <TextBlock x:Uid="Settings_Info_MoreFromLumiBear"
+                           Style="{StaticResource BodyStrongTextStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <HyperlinkButton x:Uid="Settings_Info_MoreSpanFinder"
+                                 NavigateUri="https://apps.microsoft.com/detail/9P7NJ351X9TL" />
+                <HyperlinkButton x:Uid="Settings_Info_MoreOtterGif"
+                                 NavigateUri="https://apps.microsoft.com/detail/9N0DSSBVCN81" />
+            </StackPanel>
 
         </StackPanel>
     </ScrollViewer>

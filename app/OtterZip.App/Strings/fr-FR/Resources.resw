@@ -98,7 +98,7 @@
   <data name="Settings_ShellMenuModeLabel.Text"><value>Mode sous-menu</value></data>
   <data name="Settings_ShellMenuModeFlat.Content"><value>Plat (entrées de premier niveau)</value></data>
   <data name="Settings_ShellMenuModeNested.Content"><value>Imbriqué (dans le sous-menu OtterZip)</value></data>
-  <data name="Settings_QuickProgressAutoClose.Text"><value>Fermer automatiquement la fenêtre de progression après la compression rapide</value></data>
+  <data name="Settings_QuickProgressAutoClose.Text"><value>Fermer automatiquement la fenêtre après une opération rapide</value></data>
 
   <!-- ProgressDialog (Bandizip-style quick-compress modal) -->
   <data name="ProgressDialog_TitleCompressFormat.Text"><value>Compression de {0}</value></data>
@@ -337,4 +337,9 @@
   <data name="DropOverlay_RejectTitle.Text" xml:space="preserve"><value>Impossible de déposer ces éléments</value></data>
   <data name="ExtractPanel_CloseButton.AutomationProperties.Name" xml:space="preserve"><value>Fermer</value></data>
   <data name="JobCard_CancelButton.AutomationProperties.Name" xml:space="preserve"><value>Annuler la tâche</value></data>
+  <!-- More from LumiBear Studio (cross-promo, Info tab) -->
+  <data name="Settings_Info_MoreFromLumiBear.Text"><value>Autres apps de LumiBear Studio</value></data>
+  <data name="Settings_Info_MoreSpanFinder.Content"><value>SPAN Finder — un gestionnaire de fichiers façon Finder</value></data>
+  <data name="Settings_Info_MoreOtterGif.Content"><value>OtterGIF — transformez vos vidéos en GIF</value></data>
+  <data name="Settings_Info_Support.Content"><value>Soutenir OtterZip</value></data>
 </root>

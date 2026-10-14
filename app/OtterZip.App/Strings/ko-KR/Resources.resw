@@ -155,7 +155,7 @@
   <data name="Settings_ShellMenuModeLabel.Text"><value>서브메뉴 모드</value></data>
   <data name="Settings_ShellMenuModeFlat.Content"><value>평면 (메뉴 최상위에 직접 노출)</value></data>
   <data name="Settings_ShellMenuModeNested.Content"><value>중첩 (OtterZip 서브메뉴 안에)</value></data>
-  <data name="Settings_QuickProgressAutoClose.Text"><value>빠른 압축 완료 후 진행 창 자동 닫기</value></data>
+  <data name="Settings_QuickProgressAutoClose.Text"><value>빠른 작업 완료 후 창 자동 닫기</value></data>
 
   <!-- ProgressDialog (Bandizip-style quick-compress modal) -->
   <data name="ProgressDialog_TitleCompressFormat.Text"><value>{0} 압축 중</value></data>
@@ -415,4 +415,9 @@
   <data name="DropOverlay_RejectTitle.Text" xml:space="preserve"><value>이 항목은 놓을 수 없습니다</value></data>
   <data name="ExtractPanel_CloseButton.AutomationProperties.Name" xml:space="preserve"><value>닫기</value></data>
   <data name="JobCard_CancelButton.AutomationProperties.Name" xml:space="preserve"><value>작업 취소</value></data>
+  <!-- More from LumiBear Studio (cross-promo, Info tab) -->
+  <data name="Settings_Info_MoreFromLumiBear.Text"><value>LumiBear Studio의 다른 앱</value></data>
+  <data name="Settings_Info_MoreSpanFinder.Content"><value>SPAN Finder — Finder 스타일 파일 탐색기</value></data>
+  <data name="Settings_Info_MoreOtterGif.Content"><value>OtterGIF — 영상을 GIF로</value></data>
+  <data name="Settings_Info_Support.Content"><value>OtterZip 후원하기</value></data>
 </root>

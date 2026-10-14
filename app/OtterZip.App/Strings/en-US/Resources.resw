@@ -114,7 +114,7 @@
   <data name="Settings_ShellMenuModeLabel.Text"><value>Submenu mode</value></data>
   <data name="Settings_ShellMenuModeFlat.Content"><value>Flat (top-level entries)</value></data>
   <data name="Settings_ShellMenuModeNested.Content"><value>Nested (inside OtterZip submenu)</value></data>
-  <data name="Settings_QuickProgressAutoClose.Text"><value>Auto-close progress window after quick compression completes</value></data>
+  <data name="Settings_QuickProgressAutoClose.Text"><value>Auto-close the window after a quick operation completes</value></data>
 
   <!-- ProgressDialog (Bandizip-style quick-compress modal) -->
   <data name="ProgressDialog_TitleCompressFormat.Text"><value>Compressing {0}</value></data>
@@ -368,4 +368,9 @@
   <data name="DropOverlay_RejectTitle.Text" xml:space="preserve"><value>Can't drop these items</value></data>
   <data name="ExtractPanel_CloseButton.AutomationProperties.Name" xml:space="preserve"><value>Close</value></data>
   <data name="JobCard_CancelButton.AutomationProperties.Name" xml:space="preserve"><value>Cancel job</value></data>
+  <!-- More from LumiBear Studio (cross-promo, Info tab) -->
+  <data name="Settings_Info_MoreFromLumiBear.Text"><value>More from LumiBear Studio</value></data>
+  <data name="Settings_Info_MoreSpanFinder.Content"><value>SPAN Finder — a Finder-style file manager</value></data>
+  <data name="Settings_Info_MoreOtterGif.Content"><value>OtterGIF — turn videos into GIFs</value></data>
+  <data name="Settings_Info_Support.Content"><value>Support OtterZip</value></data>
 </root>

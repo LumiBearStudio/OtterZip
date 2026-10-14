@@ -266,19 +266,22 @@ public sealed partial class MainWindow : Window
     private void OnJobSettled(object? sender, JobItem item)
     {
         SoundService.MaybePlayCompletion(item);
-        if (item.State != JobState.Done || string.IsNullOrEmpty(item.ResultPath))
+        if (item.State == JobState.Done && !string.IsNullOrEmpty(item.ResultPath))
         {
-            return;
+            TryToastCompletion(item);
+            // Shell-invoked (right-click) ops don't reveal — the user is
+            // already in the Explorer view that the verb fired from. The
+            // toast still fires so there's a completion signal.
+            if (!_launchedFromShellInvoke)
+            {
+                TryRevealOnCompletion(item);
+            }
+            TryRecycleSourceArchive(item);
         }
-        TryToastCompletion(item);
-        // Shell-invoked (right-click) ops don't reveal — the user is
-        // already in the Explorer view that the verb fired from. The
-        // toast still fires so there's a completion signal.
-        if (!_launchedFromShellInvoke)
-        {
-            TryRevealOnCompletion(item);
-        }
-        TryRecycleSourceArchive(item);
+        // "빠른 작업 완료 후 창 자동 닫기": if this window opened only to service a
+        // right-click verb and the whole batch succeeded, close it. Runs on every
+        // settle (not only Done) so a trailing failure keeps the window open.
+        MaybeScheduleAutoClose();
     }
 
     private void TryToastCompletion(JobItem item)
@@ -345,6 +348,47 @@ public sealed partial class MainWindow : Window
             // Recycle is best-effort; file locks / permissions stay out
             // of the user's face — the extract itself already succeeded.
         }
+    }
+
+    // Guards a multi-archive batch from stacking auto-close timers.
+    private bool _autoCloseScheduled;
+
+    /// <summary>
+    /// "빠른 작업 완료 후 창 자동 닫기" (<c>Settings_QuickProgressAutoClose</c>) —
+    /// when this MainWindow exists only to service an Explorer right-click verb
+    /// (<see cref="_launchedFromShellInvoke"/>) and every queued job finished in
+    /// <see cref="JobState.Done"/>, close the window after a short delay so the
+    /// app doesn't linger (matches the quick-compress ProgressDialog's 2s
+    /// auto-close, JobProgressView.MaybeStartAutoCloseTimer). Any Error/Cancelled
+    /// job — or one still Running/Queued — leaves the window open so the user can
+    /// see what happened.
+    /// </summary>
+    private void MaybeScheduleAutoClose()
+    {
+        if (_autoCloseScheduled) return;
+        if (!_launchedFromShellInvoke) return;
+        if (!SettingsService.Get<bool>("Settings_QuickProgressAutoClose", false)) return;
+        foreach (var job in _jobQueue.Jobs)
+        {
+            if (job.State != JobState.Done) return;
+        }
+        _autoCloseScheduled = true;
+        var timer = DispatcherQueue.CreateTimer();
+        timer.Interval = TimeSpan.FromSeconds(2);
+        timer.IsRepeating = false;
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            // A new drop / operation started during the delay cancels the close.
+            if (HasActiveQueueJobs())
+            {
+                _autoCloseScheduled = false;
+                return;
+            }
+            try { this.Close(); }
+            catch { /* window may already be tearing down */ }
+        };
+        timer.Start();
     }
 
     private async void OnAppWindowClosing(

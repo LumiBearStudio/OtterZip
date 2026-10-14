@@ -112,7 +112,7 @@
   <data name="Settings_ShellMenuModeLabel.Text"><value>子菜单模式</value></data>
   <data name="Settings_ShellMenuModeFlat.Content"><value>扁平（顶级菜单）</value></data>
   <data name="Settings_ShellMenuModeNested.Content"><value>嵌套（OtterZip 子菜单内）</value></data>
-  <data name="Settings_QuickProgressAutoClose.Text"><value>快速压缩完成后自动关闭进度窗口</value></data>
+  <data name="Settings_QuickProgressAutoClose.Text"><value>快速操作完成后自动关闭窗口</value></data>
 
   <!-- ProgressDialog (Bandizip-style quick-compress modal) -->
   <data name="ProgressDialog_TitleCompressFormat.Text"><value>正在压缩 {0}</value></data>
@@ -365,4 +365,9 @@
   <data name="DropOverlay_RejectTitle.Text" xml:space="preserve"><value>无法拖放此项目</value></data>
   <data name="ExtractPanel_CloseButton.AutomationProperties.Name" xml:space="preserve"><value>关闭</value></data>
   <data name="JobCard_CancelButton.AutomationProperties.Name" xml:space="preserve"><value>取消任务</value></data>
+  <!-- More from LumiBear Studio (cross-promo, Info tab) -->
+  <data name="Settings_Info_MoreFromLumiBear.Text"><value>LumiBear Studio 的其他应用</value></data>
+  <data name="Settings_Info_MoreSpanFinder.Content"><value>SPAN Finder — Finder 风格的文件管理器</value></data>
+  <data name="Settings_Info_MoreOtterGif.Content"><value>OtterGIF — 把视频变成 GIF</value></data>
+  <data name="Settings_Info_Support.Content"><value>支持 OtterZip</value></data>
 </root>

@@ -98,7 +98,7 @@
   <data name="Settings_ShellMenuModeLabel.Text"><value>サブメニューモード</value></data>
   <data name="Settings_ShellMenuModeFlat.Content"><value>フラット (トップレベル項目)</value></data>
   <data name="Settings_ShellMenuModeNested.Content"><value>ネスト (OtterZip サブメニュー内)</value></data>
-  <data name="Settings_QuickProgressAutoClose.Text"><value>クイック圧縮完了後に進行ウィンドウを自動的に閉じる</value></data>
+  <data name="Settings_QuickProgressAutoClose.Text"><value>クイック操作の完了後にウィンドウを自動的に閉じる</value></data>
 
   <!-- ProgressDialog (Bandizip-style quick-compress modal) -->
   <data name="ProgressDialog_TitleCompressFormat.Text"><value>{0} を圧縮中</value></data>
@@ -337,4 +337,9 @@
   <data name="DropOverlay_RejectTitle.Text" xml:space="preserve"><value>この項目はドロップできません</value></data>
   <data name="ExtractPanel_CloseButton.AutomationProperties.Name" xml:space="preserve"><value>閉じる</value></data>
   <data name="JobCard_CancelButton.AutomationProperties.Name" xml:space="preserve"><value>ジョブをキャンセル</value></data>
+  <!-- More from LumiBear Studio (cross-promo, Info tab) -->
+  <data name="Settings_Info_MoreFromLumiBear.Text"><value>LumiBear Studio の他のアプリ</value></data>
+  <data name="Settings_Info_MoreSpanFinder.Content"><value>SPAN Finder — Finder スタイルのファイルマネージャー</value></data>
+  <data name="Settings_Info_MoreOtterGif.Content"><value>OtterGIF — 動画を GIF に</value></data>
+  <data name="Settings_Info_Support.Content"><value>OtterZip を支援する</value></data>
 </root>
