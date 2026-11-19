@@ -8,7 +8,7 @@
 
 右键即可压缩或解压。无广告，无账户，无跟踪。
 
-[**网站**](https://lumibearstudio.github.io/otterzip-web/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**下载**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip)
+[**网站**](https://lumibear.dev/apps/otterzip/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**下载**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip)
 
 [English](../README.md) · [한국어](README.ko.md) · [日本語](README.ja.md) · 中文 · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
 
@@ -45,7 +45,7 @@
 2. 解压该 zip 文件。
 3. 右键点击 `Install.ps1` → **使用 PowerShell 运行**，然后同意提示。
 
-该安装包由 LumiBear Studio 签名，而非由 Store 签名，因此首次安装会注册一次我们的发布者证书 — 提示就是为此而来。分步指南：[**如何安装**](https://lumibearstudio.github.io/otterzip-web/install.html)
+该安装包由 LumiBear Studio 签名，而非由 Store 签名，因此首次安装会注册一次我们的发布者证书 — 提示就是为此而来。分步指南：[**如何安装**](https://lumibear.dev/apps/otterzip/#install)
 
 两个渠道是完全相同的应用。
 

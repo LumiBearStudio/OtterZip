@@ -8,7 +8,7 @@
 
 우클릭으로 압축하고, 우클릭으로 풉니다. 광고 없음, 계정 없음, 추적 없음.
 
-[**웹사이트**](https://lumibearstudio.github.io/otterzip-web/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**다운로드**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip)
+[**웹사이트**](https://lumibear.dev/ko/apps/otterzip/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**다운로드**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip)
 
 [English](../README.md) · 한국어 · [日本語](README.ja.md) · [中文](README.zh.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
 
@@ -45,7 +45,7 @@
 2. zip을 풉니다.
 3. `Install.ps1`을 우클릭 → **PowerShell에서 실행**, 그리고 표시되는 확인 창을 수락합니다.
 
-이 번들은 Store가 아니라 LumiBear Studio가 서명했기 때문에, 첫 설치 때 게시자 인증서를 한 번 등록합니다 — 확인 창은 그 때문입니다. 단계별 안내: [**설치 방법**](https://lumibearstudio.github.io/otterzip-web/install.html)
+이 번들은 Store가 아니라 LumiBear Studio가 서명했기 때문에, 첫 설치 때 게시자 인증서를 한 번 등록합니다 — 확인 창은 그 때문입니다. 단계별 안내: [**설치 방법**](https://lumibear.dev/ko/apps/otterzip/#install)
 
 두 경로 모두 완전히 같은 앱입니다.
 

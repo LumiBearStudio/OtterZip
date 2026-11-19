@@ -8,7 +8,7 @@
 
 右クリックで圧縮、右クリックで展開。広告なし、アカウントなし、トラッキングなし。
 
-[**ウェブサイト**](https://lumibearstudio.github.io/otterzip-web/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**ダウンロード**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip)
+[**ウェブサイト**](https://lumibear.dev/apps/otterzip/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**ダウンロード**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip)
 
 [English](../README.md) · [한국어](README.ko.md) · 日本語 · [中文](README.zh.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
 
@@ -45,7 +45,7 @@
 2. zip を展開します。
 3. `Install.ps1` を右クリック → **PowerShell で実行**、表示される確認に同意します。
 
-このバンドルは Store ではなく LumiBear Studio が署名しているため、初回インストール時に発行元の証明書を一度だけ登録します。確認が表示されるのは、そのためです。手順の詳細: [**インストール方法**](https://lumibearstudio.github.io/otterzip-web/install.html)
+このバンドルは Store ではなく LumiBear Studio が署名しているため、初回インストール時に発行元の証明書を一度だけ登録します。確認が表示されるのは、そのためです。手順の詳細: [**インストール方法**](https://lumibear.dev/apps/otterzip/#install)
 
 どちらの入手経路でも、アプリはまったく同じです。
 

@@ -8,7 +8,7 @@
 
 Правый клик — сжать или распаковать. Без рекламы, без аккаунтов, без слежки.
 
-[**Сайт**](https://lumibearstudio.github.io/otterzip-web/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**Скачать**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip)
+[**Сайт**](https://lumibear.dev/apps/otterzip/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**Скачать**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip)
 
 [English](../README.md) · [한국어](README.ko.md) · [日本語](README.ja.md) · [中文](README.zh.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · Русский · [Italiano](README.it.md)
 
@@ -45,7 +45,7 @@
 2. Распакуйте архив.
 3. Правый клик по `Install.ps1` → **Выполнить с помощью PowerShell**, затем подтвердите запрос.
 
-Пакет подписан LumiBear Studio, а не Store, поэтому при первой установке один раз регистрируется наш сертификат издателя — именно для этого нужен запрос. Пошаговое руководство: [**Как установить**](https://lumibearstudio.github.io/otterzip-web/install.html)
+Пакет подписан LumiBear Studio, а не Store, поэтому при первой установке один раз регистрируется наш сертификат издателя — именно для этого нужен запрос. Пошаговое руководство: [**Как установить**](https://lumibear.dev/apps/otterzip/#install)
 
 В обоих каналах — одно и то же приложение.
 
