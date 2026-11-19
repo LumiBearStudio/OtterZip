@@ -8,7 +8,7 @@
 
 Right-click to compress or extract. No ads, no accounts, no tracking.
 
-[**Website**](https://lumibearstudio.github.io/otterzip-web/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**Download**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip) · [**Sponsor**](https://github.com/sponsors/LumiBearStudio)
+[**Website**](https://lumibear.dev/apps/otterzip/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**Download**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip) · [**Sponsor**](https://github.com/sponsors/LumiBearStudio)
 
 English · [한국어](readme/README.ko.md) · [日本語](readme/README.ja.md) · [中文](readme/README.zh.md) · [Deutsch](readme/README.de.md) · [Français](readme/README.fr.md) · [Español](readme/README.es.md) · [Português](readme/README.pt.md) · [Русский](readme/README.ru.md) · [Italiano](readme/README.it.md)
 
@@ -45,7 +45,7 @@ One-click install, and updates arrive automatically.
 2. Extract the zip.
 3. Right-click `Install.ps1` → **Run with PowerShell**, then accept the prompt.
 
-The bundle is signed by LumiBear Studio rather than by the Store, so the first install registers our publisher certificate once — that is what the prompt is for. Step-by-step guide: [**How to install**](https://lumibearstudio.github.io/otterzip-web/install.html)
+The bundle is signed by LumiBear Studio rather than by the Store, so the first install registers our publisher certificate once — that is what the prompt is for. Step-by-step guide: [**How to install**](https://lumibear.dev/apps/otterzip/#install)
 
 Both channels are the exact same app.
 
@@ -69,8 +69,9 @@ Windows 10 (version 2004) or later · x64
 
 ## More from LumiBear Studio
 
-- **[SPAN Finder](https://apps.microsoft.com/detail/9P7NJ351X9TL)** — a fast, Finder-style (Miller columns) file manager for Windows. [Source](https://github.com/LumiBearStudio/SpanFinder)
-- **[OtterGIF](https://apps.microsoft.com/detail/9N0DSSBVCN81)** — turn videos into GIFs. Offline, no fuss.
+- **[SPAN Finder](https://lumibear.dev/apps/span-finder/)** — a fast, Finder-style (Miller columns) file manager for Windows. [Source](https://github.com/LumiBearStudio/SpanFinder)
+- **[OtterGIF](https://lumibear.dev/apps/ottergif/)** — turn videos into GIFs. Offline, no fuss.
+- **[Free web tools](https://lumibear.dev/tools/)** — compress PDFs, images and videos, make GIFs and more, right in your browser. Nothing is uploaded.
 
 ## License
 

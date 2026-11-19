@@ -8,7 +8,7 @@
 
 Clique com o botão direito para compactar ou extrair. Sem anúncios, sem contas, sem rastreamento.
 
-[**Site**](https://lumibearstudio.github.io/otterzip-web/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**Download**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip)
+[**Site**](https://lumibear.dev/apps/otterzip/) · [**Microsoft Store**](https://apps.microsoft.com/detail/9NWQNGGSWJCL) · [**Download**](https://github.com/LumiBearStudio/OtterZip/releases/latest/download/OtterZip_x64_installer.zip)
 
 [English](../README.md) · [한국어](README.ko.md) · [日本語](README.ja.md) · [中文](README.zh.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · Português · [Русский](README.ru.md) · [Italiano](README.it.md)
 
@@ -45,7 +45,7 @@ Instalação com um clique, e as atualizações chegam automaticamente.
 2. Extraia o zip.
 3. Clique com o botão direito em `Install.ps1` → **Executar com o PowerShell** e aceite o aviso.
 
-O pacote é assinado pela LumiBear Studio, e não pela Store, então a primeira instalação registra nosso certificado de publicador uma única vez — é para isso que serve o aviso. Guia passo a passo: [**Como instalar**](https://lumibearstudio.github.io/otterzip-web/install.html)
+O pacote é assinado pela LumiBear Studio, e não pela Store, então a primeira instalação registra nosso certificado de publicador uma única vez — é para isso que serve o aviso. Guia passo a passo: [**Como instalar**](https://lumibear.dev/apps/otterzip/#install)
 
 Os dois canais são exatamente o mesmo aplicativo.
 
